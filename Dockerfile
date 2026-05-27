@@ -1,6 +1,6 @@
 FROM php:8.4-cli
 
-ENV CACHE_BUST=2
+ENV CACHE_BUST=3
 
 RUN apt-get update && apt-get install -y \
     curl zip unzip git libzip-dev libpng-dev \
@@ -9,7 +9,6 @@ RUN apt-get update && apt-get install -y \
     pdo pdo_mysql mbstring zip exif pcntl bcmath gd \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Upgrade to Node.js 22
 RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
     && apt-get install -y nodejs
 
@@ -23,8 +22,9 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progre
 
 RUN npm install && npm run build
 
-RUN chmod -R 775 storage bootstrap/cache
+RUN mkdir -p storage/logs storage/framework/cache storage/framework/sessions storage/framework/views \
+    && chmod -R 775 storage bootstrap/cache
 
 EXPOSE 8080
 
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8080"]
+CMD ["sh", "-c", "php artisan storage:link --force && php artisan serve --host=0.0.0.0 --port=8080"]
