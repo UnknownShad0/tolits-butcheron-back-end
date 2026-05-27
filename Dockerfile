@@ -1,20 +1,29 @@
 FROM php:8.2-cli
 
-# Install dependencies
+# Install system dependencies + PHP extensions required by Laravel
 RUN apt-get update && apt-get install -y \
-    curl zip unzip git nodejs npm
+    curl zip unzip git libzip-dev libpng-dev \
+    libonig-dev libxml2-dev nodejs npm \
+    && docker-php-ext-install \
+    pdo pdo_mysql mbstring zip exif pcntl bcmath gd \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install Composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+RUN curl -sS https://getcomposer.org/installer | php -- \
+    --install-dir=/usr/local/bin --filename=composer
 
 WORKDIR /var/www
 
 COPY . .
 
+# Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader
+
+# Install JS dependencies and build assets
 RUN npm install && npm run build
 
-RUN cp .env.example .env && php artisan key:generate
+# Set permissions
+RUN chmod -R 775 storage bootstrap/cache
 
 EXPOSE 8080
 
