@@ -1,12 +1,12 @@
 FROM php:8.4-cli
 
-ENV CACHE_BUST=3
+ENV CACHE_BUST=4
 
 RUN apt-get update && apt-get install -y \
     curl zip unzip git libzip-dev libpng-dev \
-    libonig-dev libxml2-dev \
+    libonig-dev libxml2-dev libpq-dev \
     && docker-php-ext-install \
-    pdo pdo_mysql mbstring zip exif pcntl bcmath gd \
+    pdo pdo_mysql pdo_pgsql pgsql mbstring zip exif pcntl bcmath gd \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
@@ -27,4 +27,4 @@ RUN mkdir -p storage/logs storage/framework/cache storage/framework/sessions sto
 
 EXPOSE 8080
 
-CMD ["sh", "-c", "php artisan storage:link --force && php artisan serve --host=0.0.0.0 --port=8080"]
+CMD ["sh", "-c", "php artisan storage:link --force && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8080"]
