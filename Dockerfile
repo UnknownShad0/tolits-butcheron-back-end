@@ -3,21 +3,24 @@ FROM php:8.2-cli
 # Install system dependencies + PHP extensions required by Laravel
 RUN apt-get update && apt-get install -y \
     curl zip unzip git libzip-dev libpng-dev \
-    libonig-dev libxml2-dev nodejs npm \
+    libonig-dev libxml2-dev \
     && docker-php-ext-install \
     pdo pdo_mysql mbstring zip exif pcntl bcmath gd \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Install Composer
-RUN curl -sS https://getcomposer.org/installer | php -- \
-    --install-dir=/usr/local/bin --filename=composer
+# Install Node.js 18 (more reliable than apt nodejs)
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs
+
+# Copy Composer from official image (more reliable than downloading)
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www
 
 COPY . .
 
 # Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progress
 
 # Install JS dependencies and build assets
 RUN npm install && npm run build
