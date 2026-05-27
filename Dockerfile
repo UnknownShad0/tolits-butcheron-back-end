@@ -27,4 +27,4 @@ RUN mkdir -p storage/logs storage/framework/cache storage/framework/sessions sto
 
 EXPOSE 8080
 
-CMD ["sh", "-c", "php artisan storage:link --force && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8080"]
+CMD ["sh", "-c", "php artisan storage:link --force && php artisan migrate:fresh --force && php artisan serve --host=0.0.0.0 --port=8080"]
