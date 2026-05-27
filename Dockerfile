@@ -1,5 +1,7 @@
 FROM php:8.4-cli
 
+ENV CACHE_BUST=2
+
 RUN apt-get update && apt-get install -y \
     curl zip unzip git libzip-dev libpng-dev \
     libonig-dev libxml2-dev \
@@ -7,7 +9,8 @@ RUN apt-get update && apt-get install -y \
     pdo pdo_mysql mbstring zip exif pcntl bcmath gd \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+# Upgrade to Node.js 22
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
     && apt-get install -y nodejs
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
